@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { CheckCircle, AlertCircle } from "lucide-react"
-import { format, addMonths, subMonths, isBefore, parseISO } from "date-fns"
+import { format, addMonths, subMonths, isBefore } from "date-fns"
 import { es } from "date-fns/locale"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -29,7 +29,8 @@ export default function ExamTracker() {
     }).filter(Boolean) as string[]
   }, [currentDate])
 
-  const calculateExamDates = () => {
+  // Recalcular las fechas del examen cuando cambian los valores de `quarter` o `year`
+  useEffect(() => {
     if (!quarter || !year) return
 
     const yearNum = Number.parseInt(year)
@@ -57,7 +58,7 @@ export default function ExamTracker() {
     ].filter((period) => !isBefore(period.endDate, currentDate))
 
     setResults({ periods: periods.slice(0, 3), expirationDate, isExpired: false })
-  }
+  }, [quarter, year, currentDate])  // Se ejecuta cada vez que cambian `quarter` o `year`
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
@@ -99,7 +100,7 @@ export default function ExamTracker() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" onClick={calculateExamDates} disabled={!quarter || !year}>
+          <Button className="w-full" disabled={!quarter || !year}>
             Calcular fechas de examen
           </Button>
         </CardFooter>
@@ -143,4 +144,3 @@ export default function ExamTracker() {
     </div>
   )
 }
-
