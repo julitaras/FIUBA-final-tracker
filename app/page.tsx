@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { CheckCircle, AlertCircle } from "lucide-react"
 import { format, addMonths, subMonths, isBefore } from "date-fns"
 import { es } from "date-fns/locale"
@@ -8,11 +8,20 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { Moon, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function ExamTracker() {
   const [quarter, setQuarter] = useState<string>("")
   const [year, setYear] = useState<string>("")
   const [results, setResults] = useState<any>(null)
+  const { setTheme } = useTheme()
 
   const currentDate = useMemo(() => new Date(), [])
 
@@ -29,8 +38,7 @@ export default function ExamTracker() {
     }).filter(Boolean) as string[]
   }, [currentDate])
 
-  // Recalcular las fechas del examen cuando cambian los valores de `quarter` o `year`
-  useEffect(() => {
+  const calculateExamDates = () => {
     if (!quarter || !year) return
 
     const yearNum = Number.parseInt(year)
@@ -58,13 +66,37 @@ export default function ExamTracker() {
     ].filter((period) => !isBefore(period.endDate, currentDate))
 
     setResults({ periods: periods.slice(0, 3), expirationDate, isExpired: false })
-  }, [quarter, year, currentDate])  // Se ejecuta cada vez que cambian `quarter` o `year`
+  }
+
+  const ToggleDarkMode = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon">
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+          Light
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
+          Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          System
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
+    <div className="flex justify-center items-center min-h-screen p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Calculadora de Fechas de Exámenes</CardTitle>
+          <CardTitle className="flex justify-between items-center"> ¿Hasta cuándo puedo rendir un examen final? <ToggleDarkMode /></CardTitle>
+        
           <CardDescription>
             Calcula hasta cuándo puedes rendir un examen final basado en la aprobación de tu cursada. Fecha actual: {" "}
             {format(currentDate, "MMMM yyyy", { locale: es })}
@@ -100,7 +132,7 @@ export default function ExamTracker() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" disabled={!quarter || !year}>
+          <Button className="w-full" onClick={calculateExamDates} disabled={!quarter || !year}>
             Calcular fechas de examen
           </Button>
         </CardFooter>
