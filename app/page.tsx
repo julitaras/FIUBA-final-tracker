@@ -1,101 +1,146 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useState, useMemo } from "react"
+import { CheckCircle, AlertCircle } from "lucide-react"
+import { format, addMonths, subMonths, isBefore, parseISO } from "date-fns"
+import { es } from "date-fns/locale"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+
+export default function ExamTracker() {
+  const [quarter, setQuarter] = useState<string>("")
+  const [year, setYear] = useState<string>("")
+  const [results, setResults] = useState<any>(null)
+
+  const currentDate = useMemo(() => new Date(), [])
+
+  const availableYears = useMemo(() => {
+    const maxExpirationMonths = 12
+    const oldestValidDate = subMonths(currentDate, maxExpirationMonths)
+    const oldestYear = oldestValidDate.getFullYear()
+    const currentYear = currentDate.getFullYear()
+
+    return Array.from({ length: currentYear - oldestYear + 1 }, (_, index) => {
+      const year = currentYear - index
+      const lastPeriodOfYear = new Date(year, 11, 31)
+      return isBefore(lastPeriodOfYear, oldestValidDate) ? null : year.toString()
+    }).filter(Boolean) as string[]
+  }, [currentDate])
+
+  const calculateExamDates = () => {
+    if (!quarter || !year) return
+
+    const yearNum = Number.parseInt(year)
+    const baseDate = quarter === "1" ? new Date(yearNum, 6, 31) : new Date(yearNum, 11, 31)
+    const expirationDate = addMonths(baseDate, 12)
+
+    if (isBefore(expirationDate, currentDate)) {
+      setResults({ isExpired: true })
+      return
+    }
+
+    const tanda1Start = quarter === "1" ? new Date(yearNum, 6, 1) : new Date(yearNum, 11, 1)
+    const tanda1End = quarter === "1" ? new Date(yearNum, 7, 31) : new Date(yearNum + 1, 1, 28)
+
+    const tanda2Start = quarter === "1" ? new Date(yearNum, 11, 1) : new Date(yearNum + 1, 6, 1)
+    const tanda2End = quarter === "1" ? new Date(yearNum + 1, 1, 28) : new Date(yearNum + 1, 7, 31)
+
+    const tanda3Start = quarter === "1" ? new Date(yearNum + 1, 6, 1) : new Date(yearNum + 1, 11, 1)
+    const tanda3End = quarter === "1" ? new Date(yearNum + 1, 7, 31) : new Date(yearNum + 2, 1, 28)
+
+    const periods = [
+      { name: "Tanda 1", startDate: tanda1Start, endDate: tanda1End },
+      { name: "Tanda 2", startDate: tanda2Start, endDate: tanda2End },
+      { name: "Tanda 3", startDate: tanda3Start, endDate: tanda3End },
+    ].filter((period) => !isBefore(period.endDate, currentDate))
+
+    setResults({ periods: periods.slice(0, 3), expirationDate, isExpired: false })
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Calculadora de Fechas de Exámenes</CardTitle>
+          <CardDescription>
+            Calcula hasta cuándo puedes rendir un examen final basado en la aprobación de tu cursada. Fecha actual: {" "}
+            {format(currentDate, "MMMM yyyy", { locale: es })}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Año de aprobación</Label>
+            <Select value={year} onValueChange={setYear}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona un año" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableYears.map((y) => (
+                  <SelectItem key={y} value={y}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Cuatrimestre de aprobación</Label>
+            <Select value={quarter} onValueChange={setQuarter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona un cuatrimestre" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Primer cuatrimestre (Marzo-Julio)</SelectItem>
+                <SelectItem value="2">Segundo cuatrimestre (Agosto-Diciembre)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button className="w-full" onClick={calculateExamDates} disabled={!quarter || !year}>
+            Calcular fechas de examen
+          </Button>
+        </CardFooter>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        {results && results.isExpired && (
+          <CardContent className="pt-4 border-t">
+            <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-md">
+              <AlertCircle className="h-5 w-5" />
+              <div>
+                <p className="font-semibold">Materia vencida</p>
+                <p className="text-sm">La regularidad de esta materia ya ha vencido. Ya no es posible rendir el examen final.</p>
+              </div>
+            </div>
+          </CardContent>
+        )}
+
+        {results && !results.isExpired && (
+          <CardContent className="pt-4 border-t">
+            <h3 className="font-semibold text-lg mb-3">Períodos disponibles para rendir:</h3>
+            <div className="space-y-3">
+              {results.periods.map((period: any, index: number) => (
+                <div key={index} className="bg-muted p-3 rounded-md">
+                  <div className="font-medium">{period.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {format(period.startDate, "MMMM yyyy", { locale: es })} - {" "}
+                    {format(period.endDate, "MMMM yyyy", { locale: es })}
+                  </div>
+                </div>
+              ))}
+              <div className="flex items-center gap-2 mt-4 text-sm">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span>
+                  Tu regularidad vence el {" "}
+                  <span className="font-semibold">{format(results.expirationDate, "PPP", { locale: es })}</span>
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        )}
+      </Card>
     </div>
-  );
+  )
 }
+
