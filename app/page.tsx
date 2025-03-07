@@ -1,14 +1,13 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { CheckCircle, AlertCircle } from "lucide-react"
 import { format, addMonths, subMonths, isBefore } from "date-fns"
 import { es } from "date-fns/locale"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Moon, Sun } from "lucide-react"
+import { Moon, Sun, Github, CheckCircle, AlertCircle} from "lucide-react"
 import { useTheme } from "next-themes"
 import {
   DropdownMenu,
@@ -95,7 +94,10 @@ export default function ExamTracker() {
     <div className="flex justify-center items-center min-h-screen p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="flex justify-between items-center"> ¿Hasta cuándo puedo rendir un examen final? <ToggleDarkMode /></CardTitle>
+          <CardTitle className="flex justify-between items-center">
+            {" "}
+            ¿Hasta cuándo puedo rendir un examen final? <ToggleDarkMode />
+          </CardTitle>
         
           <CardDescription>
             Calcula hasta cuándo puedes rendir un examen final basado en la aprobación de tu cursada. Fecha actual: {" "}
@@ -148,7 +150,22 @@ export default function ExamTracker() {
             </div>
           </CardContent>
         )}
-
+        <CardFooter className="flex flex-col space-y-4">
+          <Button className="w-full" onClick={calculateExamDates} disabled={!quarter || !year}>
+            Calcular fechas de examen
+          </Button>
+          <div className="flex justify-center w-full">
+            <a
+              href="https://github.com/julitaras/FIUBA-final-tracker/issues/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center text-sm text-muted-foreground hover:text-primary"
+            >
+              <Github className="h-4 w-4 mr-2" />
+              Reportar un problema
+            </a>
+          </div>
+        </CardFooter>
         {results && !results.isExpired && (
           <CardContent className="pt-4 border-t">
             <h3 className="font-semibold text-lg mb-3">Períodos disponibles para rendir:</h3>
