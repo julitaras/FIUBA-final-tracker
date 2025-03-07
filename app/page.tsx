@@ -130,7 +130,7 @@ export default function ExamTracker() {
       <footer className="w-full py-4 bg-gray-100 dark:bg-gray-800">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <a
-            href="https://github.com/julitaras/FIUBA-final-tracker/issues/new"
+            href="https://github.com/julitaras/FIUBA-final-tracker/issues"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
