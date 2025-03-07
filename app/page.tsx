@@ -137,6 +137,17 @@ export default function ExamTracker() {
           <Button className="w-full" onClick={calculateExamDates} disabled={!quarter || !year}>
             Calcular fechas de examen
           </Button>
+          <div className="flex justify-center w-full">
+            <a
+              href="https://github.com/julitaras/FIUBA-final-tracker/issues/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center text-sm text-muted-foreground hover:text-primary"
+            >
+              <Github className="h-4 w-4 mr-2" />
+              Reportar un problema
+            </a>
+          </div>
         </CardFooter>
 
         {results && results.isExpired && (
@@ -150,22 +161,7 @@ export default function ExamTracker() {
             </div>
           </CardContent>
         )}
-        <CardFooter className="flex flex-col space-y-4">
-          <Button className="w-full" onClick={calculateExamDates} disabled={!quarter || !year}>
-            Calcular fechas de examen
-          </Button>
-          <div className="flex justify-center w-full">
-            <a
-              href="https://github.com/julitaras/FIUBA-final-tracker/issues/new"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center text-sm text-muted-foreground hover:text-primary"
-            >
-              <Github className="h-4 w-4 mr-2" />
-              Reportar un problema
-            </a>
-          </div>
-        </CardFooter>
+        
         {results && !results.isExpired && (
           <CardContent className="pt-4 border-t">
             <h3 className="font-semibold text-lg mb-3">Períodos disponibles para rendir:</h3>
