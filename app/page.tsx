@@ -191,6 +191,7 @@ export default function ExamTracker() {
               <Github className="h-4 w-4 mr-2" />
               Reportar un problema
             </a>
+            <p>© 2025 by <a href="https://github.com/julitaras" target="_blank" rel="noopener noreferrer" className="text-blue-400">Julita</a>.</p>
             <a
               href="https://fiubaverse.wordpress.com/dudas-sobre-finales-integradores/"
               target="_blank"
