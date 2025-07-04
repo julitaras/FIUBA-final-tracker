@@ -172,9 +172,12 @@ export default function ExamTracker() {
                   <CheckCircle className="h-4 w-4 text-green-500" />
                   <span>
                     Tu regularidad vence el {" "}
-                    <span className="font-semibold">{format(results.expirationDate, "PPP", { locale: es })}</span>
+                    <span className="font-semibold">{format(results.expirationDate, "PPP", { locale: es })}</span>.
                   </span>
                 </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  La fecha de vencimiento es a modo ilustrativo ya que se pueden rendir finales hasta que comience el otro cuatrimestre.
+                </p>
               </div>
             </CardContent>
           )}
